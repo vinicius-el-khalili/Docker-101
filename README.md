@@ -68,6 +68,7 @@ It is always beneficial to specify these tags, otherwise Docker will download th
 
 <img src="doc-assets/tags.png" alt="Description of Image" style="max-height: 200px;"/>
 
-*Figure 2: Tags used for Node applications.*
+*<span style="font-size:.9rem">Figure 2: Tags used for Node applications.<span>*
 
 # 5. The Dockerfile
+
