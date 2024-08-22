@@ -174,7 +174,7 @@ CMD ["node","app.js"]
 
 By doing this, changes in the source code will lead to a faster rebuild time.
 
-9. Managing images & Containers
+# 9. Managing images & Containers
 
 Here's a list of useful commands to manage images and containers from terminal:
 
