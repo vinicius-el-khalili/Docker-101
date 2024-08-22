@@ -79,6 +79,7 @@ To create a Docker image, you must use a <b>Dockerfile</b>, which is a set of in
 
 The commands will be executed bottom-up, constructing the layers of the image one layer at a time. Let's create an image for a node application.
 First, we have this simple folder structure in our machine:
+
 .<br/>
 ├── app.js<br/>
 ├── Dockerfile<br/>
@@ -102,26 +103,13 @@ This folder is empty. Let's copy our files into it.
 The first parameter is the relative path to the directory we wanna copy our source files from - in this case, Dockerfile is in the same directory as the source files (a dot).
 The second parameter is the relative path inside the work directory (`/app`) that we want to copy our source code to.
 
-The work directory should look like this:
-
-/app<br/>
-├── app.js<br/>
-├── package.json<br/>
-└── package-lock.json<br/>
-
-We can use `RUN` to setup terminal commands and Docker will execute them at the work directory.
+We can use `RUN` to setup terminal commands and Docker will execute them at build time in the work directory.
 
 4. ```RUN npm install```
 
-/app<br/>
-├── node_modules<br/>
-├── app.js<br/>
-├── package.json<br/>
-└── package-lock.json<br/>
+Next, we can expose the container's port to the external user. Although our node app may use a port in it, these are <i>not</i> the same port. Docker will use this port to make a port mapping.
 
-Next, we can expose the container's port to the external user. Although our node app may use a port in it, these are <i>not</i> the same port. Docker will use this port to make a port mapping, which will be seen later on.
-
-5. ```EXPOSE 4000```
+1. ```EXPOSE 4000```
 
 If you want to actually start the server, keep in mind that `RUN` is executed at build time, not at run time. For that, we should use
 
@@ -145,13 +133,32 @@ With this your image should be built. Check it with
 
 # 6. dockerignore
 
-In our machine, we might have node_modules installed for dev mode. 
-.<br/>
-├── node_modules<br/>
-├── app.js<br/>
-├── Dockerfile<br/>
-├── package.json<br/>
-└── package-lock.json<br/>
-
+In our machine, we might have node_modules installed for dev mode.
 When we run `COPY . .` in the Dockerfile, node_modules should be ignored. For Docker to ignore this and any other files/folders, like environment variables or sensitive data. For that, create a file called `.dockerignore`. It works similarly to a `.gitignore` file, but there's some crucial syntax differences, so be sure to look at the docs for more details.
+
+# 7. Starting & stoping containers
+
+Here's a list of useful commands to manage images and containers from terminal:
+
+> ___
+>
+> (list images) `docker images -a`
+>
+> (build image) `docker build -t <image_name>:<tag> <path>`
+>
+> (remove image) `docker rmi <image_name>:<tag>`
+>
+> (remove all images) `docker rmi $(docker images -q)`
+>
+> (list running containers) `docker ps`
+>
+> (list all containers) `docker ps -a`
+> 
+> (start container) `docker run -d -p <host_port>:<container_port> --name <container_name> <image_name>:<tag>`
+>
+> (delete container) `docker rm <container_name>`
+>
+> (delete all containers) `docker rm -f $(docker ps -a -q)`
+>
+> ___
 
