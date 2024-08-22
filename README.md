@@ -138,19 +138,28 @@ When we run `COPY . .` in the Dockerfile, node_modules should be ignored. For Do
 
 # 7. Starting & stoping containers
 
-Here's a list of useful commands to manage images and containers from terminal. Parentheses are used for flag description.
-
+Here's a list of useful commands to manage images and containers from terminal:
 > ___
 > (list images) `docker images -a`
+> 
 > (build image) `docker build -t <image_name>:<tag> <path>`
+> 
 > (remove image) `docker rmi <image_name>:<tag>`
+> 
 > (remove all images) `docker rmi $(docker images -q)`
+> 
 > (list running containers) `docker ps`
+> 
 > (list all containers) `docker ps -a`
+> 
 > (start container) `docker run -d -p <host_port>:<container_port> --name <container_name> <image_name>:<tag>`
+> 
 > (stop container) `docker stop <container_name_or_id>`
+> 
 > (delete container) `docker rm <container_name>`
+> 
 > (delete all containers) `docker rm -f $(docker ps -a -q)`
+> 
 > 
 > -a: all
 > -t: tag
@@ -159,4 +168,6 @@ Here's a list of useful commands to manage images and containers from terminal. 
 > -q: quiet
 > -f: force
 > ___
+
+# 8. Layer caching
 
