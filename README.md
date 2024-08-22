@@ -79,11 +79,11 @@ To create a Docker image, you must use a <b>Dockerfile</b>, which is a set of in
 
 The commands will be executed bottom-up, constructing the layers of the image one layer at a time. Let's create an image for a node application.
 First, we have this simple folder structure in our machine:
-.
-├── app.js
-├── Dockerfile
-├── package.json
-└── package-lock.json
+.<br/>
+├── app.js<br/>
+├── Dockerfile<br/>
+├── package.json<br/>
+└── package-lock.json<br/>
 
 In the Dockerfile, the first line will specify the runtime environment and OS distribution of our app:
 
@@ -104,20 +104,20 @@ The second parameter is the relative path inside the work directory (`/app`) tha
 
 The work directory should look like this:
 
-/app
-├── app.js
-├── package.json
-└── package-lock.json
+/app<br/>
+├── app.js<br/>
+├── package.json<br/>
+└── package-lock.json<br/>
 
 We can use `RUN` to setup terminal commands and Docker will execute them at the work directory.
 
 4. ```RUN npm install```
 
-/app
-├── node_modules
-├── app.js
-├── package.json
-└── package-lock.json
+/app<br/>
+├── node_modules<br/>
+├── app.js<br/>
+├── package.json<br/>
+└── package-lock.json<br/>
 
 Next, we can expose the container's port to the external user. Although our node app may use a port in it, these are <i>not</i> the same port. Docker will use this port to make a port mapping, which will be seen later on.
 
@@ -146,7 +146,7 @@ With this your image should be built. Check it with
 # 6. dockerignore
 
 In our machine, we might have node_modules installed for dev mode. 
-.
+.<br/>
 ├── node_modules<br/>
 ├── app.js<br/>
 ├── Dockerfile<br/>
