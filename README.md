@@ -30,7 +30,6 @@ Containers are runnable instances of images.
 
 <img src="doc-assets/images-and-containers.png" alt="Description of Image" style="max-height: 150px;"/>
 
-*<span style="font-size:.9rem">Figure 1: images & containers.<span>*
 
 ###### Containers are isolated processes
 
@@ -52,7 +51,6 @@ The first layer of an image container is the <b>parent image</b>, which contains
 
 <img src="doc-assets/image-layers.png" alt="Description of Image" style="max-height: 200px;"/>
 
-*<span style="font-size:.9rem">Figure 2: image layers.<span>*
 
 ### 4.2. DockerHub
 
@@ -71,7 +69,6 @@ It is always beneficial to specify these tags, otherwise Docker will download th
 
 <img src="doc-assets/tags.png" alt="Description of Image" style="max-height: 200px;"/>
 
-*<span style="font-size:.9rem">Figure 3: tags used to specify Node versions and OS distributions.<span>*
 
 # 5. Dockerfile
 
@@ -171,3 +168,28 @@ Here's a list of useful commands to manage images and containers from terminal:
 
 # 8. Layer caching
 
+Docker will cache the image layers on top of one another, so if something changes on the N-th layer of an image, all the previous (N-1)-th layers will remain cached at build time. This will increase the build procedure perfomance by only rebuilding the layers after the change.
+So far, our Dockerfile looks like this:
+
+```
+FROM node:22-alpine3.19
+WORKDIR /app
+COPY . .
+RUN npm install
+EXPOSE 4000
+CMD ["node","app.js"]
+```
+
+Notice that any change in the source code will re-trigger `npm install`. This bottleneck can be corrected by adjusting the sequence of events in the Dockerfile, placing the source code after package installations.
+
+```
+FROM node:22-alpine3.19
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+EXPOSE 4000
+CMD ["node","app.js"]
+```
+
+By doing this, changes in the source code will lead to a faster rebuild time.
