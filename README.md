@@ -30,8 +30,7 @@ Containers are runnable instances of images.
 
 <img src="doc-assets/images-and-containers.png" alt="Description of Image" style="max-height: 150px;"/>
 
-*Figure 1: images & containers.*
-
+*<span style="font-size:.9rem">Figure 1: images & containers.<span>*
 
 ###### Containers are isolated processes
 
@@ -51,6 +50,10 @@ Images are built bottom-up from different layers, where wach layer adds somethin
 
 The first layer of an image container is the <b>parent image</b>, which contains the operating system and runtime environment of your application.
 
+<img src="doc-assets/image-layers.png" alt="Description of Image" style="max-height: 200px;"/>
+
+*<span style="font-size:.9rem">Figure 2: image layers.<span>*
+
 ### 4.2. DockerHub
 
 DockerHub is an online repository of Docker images, containing a collection of pre-made parent images that can be used as the parent layer of your images.
@@ -68,7 +71,87 @@ It is always beneficial to specify these tags, otherwise Docker will download th
 
 <img src="doc-assets/tags.png" alt="Description of Image" style="max-height: 200px;"/>
 
-*<span style="font-size:.9rem">Figure 2: Tags used for Node applications.<span>*
+*<span style="font-size:.9rem">Figure 3: tags used to specify Node versions and OS distributions.<span>*
 
-# 5. The Dockerfile
+# 5. Dockerfile
+
+To create a Docker image, you must use a <b>Dockerfile</b>, which is a set of instructions that Docker will use for the creation of your image.
+
+The commands will be executed bottom-up, constructing the layers of the image one layer at a time. Let's create an image for a node application.
+First, we have this simple folder structure in our machine:
+.
+├── app.js
+├── Dockerfile
+├── package.json
+└── package-lock.json
+
+In the Dockerfile, the first line will specify the runtime environment and OS distribution of our app:
+
+1. ```FROM node:22-alpine3.19```
+
+So far we have an alpine3.19 linux distribution with node22 installed in it. Sweet, but it's all empty.
+Let's create a work directory inside the image's root directory...
+
+2. ```WORKDIR /app```
+
+The next operations will be executed relativily to the work directory.
+This folder is empty. Let's copy our files into it.
+
+3. ```COPY . .```
+
+The first parameter is the relative path to the directory we wanna copy our source files from - in this case, Dockerfile is in the same directory as the source files (a dot).
+The second parameter is the relative path inside the work directory (`/app`) that we want to copy our source code to.
+
+The work directory should look like this:
+
+/app
+├── app.js
+├── package.json
+└── package-lock.json
+
+We can use `RUN` to setup terminal commands and Docker will execute them at the work directory.
+
+4. ```RUN npm install```
+
+/app
+├── node_modules
+├── app.js
+├── package.json
+└── package-lock.json
+
+Next, we can expose the container's port to the external user. Although our node app may use a port in it, these are <i>not</i> the same port. Docker will use this port to make a port mapping, which will be seen later on.
+
+5. ```EXPOSE 4000```
+
+If you want to actually start the server, keep in mind that `RUN` is executed at build time, not at run time. For that, we should use
+
+6. ```CMD ["node","app.js"]```
+
+Let's set a clear distinction between these two:
+
+> RUN: Executes commands in a new layer on top of the current image and commits the result. 
+
+> CMD: Specifies the default command to run when a container starts from the built image. 
+
+All set, we can now build the image in our machine with `docker build` giving it a title and relative path.
+
+@ /api/
+```docker build -t myapp .```
+
+With this your image should be built. Check it with
+```docker images```
+
+<img src="doc-assets/docker-images.png" alt="Description of Image" style="max-height: 200px;"/>
+
+# 6. dockerignore
+
+In our machine, we might have node_modules installed for dev mode. 
+.
+├── node_modules
+├── app.js
+├── Dockerfile
+├── package.json
+└── package-lock.json
+
+When we run `COPY . .` in the Dockerfile, node_modules should be ignored. For Docker to ignore this and any other files/folders, like environment variables or sensitive data. For that, create a file called `.dockerignore`. It works similarly to a `.gitignore` file, but there's some crucial syntax differences, so be sure to look at the docs for more details.
 
