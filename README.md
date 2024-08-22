@@ -191,7 +191,9 @@ Here's a list of useful commands to manage images and containers from terminal:
 > 
 > (list all containers) `docker ps -a`
 > 
-> (start container) `docker run -d -p <host_port>:<container_port> --name <container_name> <image_name>:<tag>`
+> (run container) `docker run -d -p <host_port>:<container_port> --name <container_name> <image_name>:<tag>`
+>
+> (start container) `docker start -i <container_name_or_id>`
 > 
 > (stop container) `docker stop <container_name_or_id>`
 > 
@@ -201,16 +203,91 @@ Here's a list of useful commands to manage images and containers from terminal:
 > 
 > 
 > -a: all
+> 
 > -t: tag
+> 
 > -d: detached
+> 
 > -p: port-mapping
+> 
 > -q: quiet
+> 
 > -f: force
+> 
+> -i: interactive
 > ___
 
 Also, there's one powerful and dangerous command that can be quite useful:
 
-> `docker system prune -a`
+```
+docker system prune -a
+```
 
 This command removes all unused Docker objects, including stopped containers, unused networks, dangling images (images not referenced by any container), and build cache. Adding the -a flag extends the cleanup to also remove unused images, not just dangling ones.
+
+# 10. Volumes
+
+Remember: Images are <b>read-only</b>.
+If there's a change in the source code, the image is not automayically updated.
+We must manually rebuild the image with the changes and then run the container all over again.
+There's a way around this using something called <b>Volumes</b>.
+Volumes are a feature of Docker that allows us to specify folders on out host machine that can be made available to running containers.
+We can map these folders in our host machine to specific folders in the container.
+So if there's a change in the souce code, these changes can be automatically reflected in the mapped container's folder.
+This is useful for development mode, but the image itself does not change. Images are <b>read-only</b>.
+In order to <i>actually</i> update the image, we must rebuild it anyways.
+Let's see how this is done.
+
+First, we'll add a new script in the `package.json` file:
+
+```
+"scripts": {
+    [...],
+    "dev":"nodemon -L app.js"
+},
+```
+
+The `-L` flag stands for `--legacy-watch`, which is crucial for nodemon running in Docker containers.
+
+Now, let's install nodemon globally in our image by adding `npm install -g nodemon` in the Dockerfile. Also, we'll change the CMD script to adapt these changes.
+
+```
+FROM node:22-alpine3.19
+RUN npm install -g nodemon
+WORKDIR /app
+COPY package.json .
+RUN npm install
+EXPOSE 4000
+COPY . .
+CMD ["npm","run","dev"]
+```
+
+> [nodemon](https://www.npmjs.com/package/nodemon) is a developer tool node package that watches files for changes and automatically restart the server when a change is detected.
+
+Now we can rebuild the image...
+`
+docker build -t node-server:nodemon ./api
+`
+
+...and run it:
+`
+docker run --name node-server-nodemon -p 4000:4000 --rm node-server:nodemon
+`
+
+The `--rm` will set docker the automatically remove the container once it stops.
+
+Nodemon will now be watching for changes in the container's `app.js` file, but we still haven't mapped our host source code into it.
+Enter volumes: to map out host folder into the container's `/app` folder, we can adapt the `docker run` command to include the volume tag `-v`:
+
+`
+docker run --name node-server-nodemon -p 4000:4000 --rm -v <absolute-path>:/app  node-server:nodemon
+`
+
+This will ensure that changes in out host source code will be automatically reflected in the container.
+
+But there's a catch: changes in the `node_modules` folder will not be detected. To fix that, we can adapt our command with another volume:
+
+`
+docker run --name node-server-nodemon -p 4000:4000 --rm -v <absolute-path>:/app -v /app/node_modules node-server:nodemon
+`
 
