@@ -128,7 +128,7 @@ With this your image should be built. Check it with
 
 <img src="doc-assets/docker-images.png" alt="Description of Image" style="max-height: 200px;"/>
 
-# 6. dockerignore
+# 6. Dockerignore
 
 In our machine, we might have node_modules installed for dev mode.
 When we run `COPY . .` in the Dockerfile, node_modules should be ignored. For Docker to ignore this and any other files/folders, like environment variables or sensitive data. For that, create a file called `.dockerignore`. It works similarly to a `.gitignore` file, but there's some crucial syntax differences, so be sure to look at the docs for more details.
@@ -271,7 +271,7 @@ docker build -t node-server:nodemon ./api
 
 ...and run it:
 `
-docker run --name node-server-nodemon -p 4000:4000 --rm node-server:nodemon
+docker run --name node-server-container -p 4000:4000 --rm node-server:nodemon
 `
 
 The `--rm` will set docker the automatically remove the container once it stops.
@@ -280,7 +280,7 @@ Nodemon will now be watching for changes in the container's `app.js` file, but w
 Enter volumes: to map out host folder into the container's `/app` folder, we can adapt the `docker run` command to include the volume tag `-v`:
 
 `
-docker run --name node-server-nodemon -p 4000:4000 --rm -v <absolute-path>:/app  node-server:nodemon
+docker run --name node-server-container -p 4000:4000 --rm -v <absolute-path>:/app  node-server:nodemon
 `
 
 This will ensure that changes in out host source code will be automatically reflected in the container.
@@ -288,6 +288,36 @@ This will ensure that changes in out host source code will be automatically refl
 But there's a catch: changes in the `node_modules` folder will not be detected. To fix that, we can adapt our command with another volume:
 
 `
-docker run --name node-server-nodemon -p 4000:4000 --rm -v <absolute-path>:/app -v /app/node_modules node-server:nodemon
+docker run --name node-server-container -p 4000:4000 --rm -v <absolute-path>:/app -v /app/node_modules node-server:nodemon
 `
 
+# 11. Docker Compose
+
+So far we've been working with only one container and using single line terminal commands to build and run our container. There's a better way to manage single or multiple containers: `docker compose`.
+`docker compose` is a tool that enables the management of multiple containers in a single `docker-compose.yml` file, which contains all the container configuration of our projects.
+Using this, we can dockerize multiple containers and execute them all at once: database, back end, front end etc.
+
+First, create a `docker-compose.yml` in the root directory of your project.
+
+The first line of `docker-compose.yml` sets the version of Docker Compose to be used. Then, `services` takes care of each container in your project separately. The parameters of each image are set and we're ready to build and run our core container, which contains all other containers in the project.
+
+In our case, the `docker-compose.yml` file will look like this:
+
+```
+version: "3.8"
+services:
+  api:
+    build: ./api
+    container_name: node-server-container
+    ports:
+      - 4000:4000
+    volumes:
+      - ./api:/app
+```
+
+Now, by running the command `docker compose up`, the containers should run and the application will be available at port 4000.
+
+To stop docker compose, we can use the command
+`docker compose down` in the root folder.
+You can also remove all images and volumes using
+`docker compose down --rmi all`.
