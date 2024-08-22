@@ -147,11 +147,11 @@ With this your image should be built. Check it with
 
 In our machine, we might have node_modules installed for dev mode. 
 .
-├── node_modules
-├── app.js
-├── Dockerfile
-├── package.json
-└── package-lock.json
+├── node_modules<br/>
+├── app.js<br/>
+├── Dockerfile<br/>
+├── package.json<br/>
+└── package-lock.json<br/>
 
 When we run `COPY . .` in the Dockerfile, node_modules should be ignored. For Docker to ignore this and any other files/folders, like environment variables or sensitive data. For that, create a file called `.dockerignore`. It works similarly to a `.gitignore` file, but there's some crucial syntax differences, so be sure to look at the docs for more details.
 
