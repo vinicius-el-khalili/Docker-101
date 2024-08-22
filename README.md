@@ -135,7 +135,49 @@ When we run `COPY . .` in the Dockerfile, node_modules should be ignored. For Do
 
 # 7. Starting & stoping containers
 
+Now we can build our image and start its container.
+
+> (build image) `docker build -t <image_name>:<tag> <path>`
+> (start container) `docker run -d -p <host_port>:<container_port> --name <container_name> <image_name>:<tag>`
+> (stop container) `docker stop <container_name_or_id>`
+> -t: tag
+> -d: detached
+> -p: port-mapping
+
+For further commands, check section 9.
+
+# 8. Layer caching
+
+Docker will cache the image layers on top of one another, so if something changes on the N-th layer of an image, all the previous (N-1)-th layers will remain cached at build time. This will increase the build procedure perfomance by only rebuilding the layers after the change.
+So far, our Dockerfile looks like this:
+
+```
+FROM node:22-alpine3.19
+WORKDIR /app
+COPY . .
+RUN npm install
+EXPOSE 4000
+CMD ["node","app.js"]
+```
+
+Notice that any change in the source code will re-trigger `npm install`. This bottleneck can be corrected by adjusting the sequence of events in the Dockerfile, placing the source code after package installations.
+
+```
+FROM node:22-alpine3.19
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+EXPOSE 4000
+CMD ["node","app.js"]
+```
+
+By doing this, changes in the source code will lead to a faster rebuild time.
+
+9. Managing images & Containers
+
 Here's a list of useful commands to manage images and containers from terminal:
+
 > ___
 > (list images) `docker images -a`
 > 
@@ -166,30 +208,9 @@ Here's a list of useful commands to manage images and containers from terminal:
 > -f: force
 > ___
 
-# 8. Layer caching
+Also, there's one powerful and dangerous command that can be quite useful:
 
-Docker will cache the image layers on top of one another, so if something changes on the N-th layer of an image, all the previous (N-1)-th layers will remain cached at build time. This will increase the build procedure perfomance by only rebuilding the layers after the change.
-So far, our Dockerfile looks like this:
+> `docker system prune -a`
 
-```
-FROM node:22-alpine3.19
-WORKDIR /app
-COPY . .
-RUN npm install
-EXPOSE 4000
-CMD ["node","app.js"]
-```
+This command removes all unused Docker objects, including stopped containers, unused networks, dangling images (images not referenced by any container), and build cache. Adding the -a flag extends the cleanup to also remove unused images, not just dangling ones.
 
-Notice that any change in the source code will re-trigger `npm install`. This bottleneck can be corrected by adjusting the sequence of events in the Dockerfile, placing the source code after package installations.
-
-```
-FROM node:22-alpine3.19
-WORKDIR /app
-COPY package.json .
-RUN npm install
-COPY . .
-EXPOSE 4000
-CMD ["node","app.js"]
-```
-
-By doing this, changes in the source code will lead to a faster rebuild time.
